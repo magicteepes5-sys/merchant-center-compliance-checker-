@@ -1,0 +1,5 @@
+{
+  "name": "Merchant Center Compliance Checker",
+  "description": "An AI-powered tool to analyze website content against Google Merchant Center policies, providing actionable recommendations to avoid suspension and ensure compliance.",
+  "requestFramePermissions": []
+}
