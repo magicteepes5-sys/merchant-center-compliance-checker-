@@ -1,6 +1,6 @@
+import { randomUUID } from 'node:crypto';
 import { ensureSchema, sql } from '../lib/db.js';
 import { getSession, send } from './_shared.js';
-
 type WebsiteResult = {
   status: 'Approved' | 'Rejected';
   summary: string;
@@ -86,7 +86,7 @@ export default async function handler(req: any, res: any) {
     const result = await analyzeWithOpenAI(content, apiKey);
 
     await sql`UPDATE users SET searches_remaining = searches_remaining - 1 WHERE id = ${session.userId}`;
-    await sql`INSERT INTO analyses (id, user_id, analysis_type, input_excerpt, result_json) VALUES (${crypto.randomUUID()}, ${session.userId}, 'website', ${content.slice(0, 300)}, ${JSON.stringify(result)}::jsonb)`;
+    await sql`INSERT INTO analyses (id, user_id, analysis_type, input_excerpt, result_json) VALUES (${randomUUID()}, ${session.userId}, 'website', ${content.slice(0, 300)}, ${JSON.stringify(result)}::jsonb)`;
     const latest = await sql`SELECT searches_remaining FROM users WHERE id = ${session.userId}`;
 
     return send(res, 200, { result, searchesRemaining: latest[0].searches_remaining });

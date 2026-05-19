@@ -2,7 +2,16 @@ import { neon } from '@neondatabase/serverless';
 
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || '';
 
-export const sql = neon(databaseUrl);
+type SqlTag = ReturnType<typeof neon>;
+let _sql: SqlTag | null = null;
+
+function getSql(): SqlTag {
+  if (!databaseUrl) throw new Error('DATABASE_URL is missing');
+  if (!_sql) _sql = neon(databaseUrl);
+  return _sql;
+}
+
+export const sql = ((...args: any[]) => getSql()(...(args as Parameters<SqlTag>))) as SqlTag;
 
 export async function ensureSchema() {
   if (!databaseUrl) throw new Error('DATABASE_URL is missing');

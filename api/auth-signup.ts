@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'node:crypto';
 import { ensureSchema, sql } from '../lib/db.js';
 import { signToken } from '../lib/auth.js';
 import { send } from './_shared.js';
@@ -12,7 +13,7 @@ export default async function handler(req: any, res: any) {
       return send(res, 400, { error: 'Invalid email or password' });
     }
     const hash = await bcrypt.hash(String(password), 10);
-    const uid = crypto.randomUUID();
+    const uid = randomUUID();
     const inserted = await sql`INSERT INTO users (id, email, password_hash) VALUES (${uid}, ${String(email).toLowerCase()}, ${hash}) RETURNING id, email, searches_remaining`;
     const user = inserted[0];
     const token = signToken({ userId: user.id, email: user.email });
