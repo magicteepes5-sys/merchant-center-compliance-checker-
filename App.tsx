@@ -168,14 +168,14 @@ const App: React.FC = () => {
               <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <p className="font-bold">Low credits: {user.searchesRemaining} left</p>
-                  <p className="text-sm">Need more credits before Stripe is ready? Contact us and we can top up manually.</p>
+                  <p className="text-sm">Top up instantly with Stripe, or contact us for manual credits.</p>
                 </div>
-                <a
-                  href="mailto:hello@mc-checker.com?subject=MC%20Checker%20manual%20credit%20top-up"
+                <button
+                  onClick={() => void handleUpgrade()}
                   className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
                 >
-                  Contact for more credits
-                </a>
+                  Upgrade with Stripe
+                </button>
               </div>
             )}
             <InputForm onAnalyze={handleAnalysis} isLoading={isLoading} />
