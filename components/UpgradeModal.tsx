@@ -3,9 +3,10 @@ import { SparklesIcon } from './icons/SparklesIcon';
 
 interface UpgradeModalProps {
   onClose: () => void;
+  onUpgrade: () => Promise<void> | void;
 }
 
-export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
+export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, onUpgrade }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>
@@ -20,11 +21,17 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         </p>
         
         <div className="space-y-3">
-          <a
-            href="mailto:hello@mc-checker.com?subject=Need%20more%20MC%20Checker%20credits"
+          <button
+            onClick={() => void onUpgrade()}
             className="block w-full py-3.5 px-4 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
           >
-            Need more credits? Contact us
+            Upgrade with Stripe
+          </button>
+          <a
+            href="mailto:hello@mc-checker.com?subject=Need%20more%20MC%20Checker%20credits"
+            className="block w-full py-3 px-4 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+          >
+            Need manual credits? Contact us
           </a>
           <button 
             onClick={onClose}

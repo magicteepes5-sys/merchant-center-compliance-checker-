@@ -9,7 +9,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { UpgradeModal } from './components/UpgradeModal';
 import { LandingPage } from './components/LandingPage';
 import { AuditHistory } from './components/AuditHistory';
-import { analyzeFeed, analyzeWebsite, getAuditHistory, getMe, login, logoutLocal, signup } from './services/apiClient';
+import { analyzeFeed, analyzeWebsite, createCheckoutSession, getAuditHistory, getMe, login, logoutLocal, signup } from './services/apiClient';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -91,6 +91,16 @@ const App: React.FC = () => {
     setAnalysisResult(null);
     setProductAnalysisResult(null);
     setShowAuth(false);
+  };
+
+  const handleUpgrade = async () => {
+    try {
+      const url = await createCheckoutSession();
+      window.location.href = url;
+    } catch (e: any) {
+      setError(e?.message || 'Could not start checkout.');
+      setShowUpgradeModal(false);
+    }
   };
 
   const handleAnalysis = useCallback(async (_url: string, content: string, feedContent: string) => {
@@ -182,7 +192,7 @@ const App: React.FC = () => {
         </main>
 
         <Footer />
-        {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} />}
+        {showUpgradeModal && <UpgradeModal onClose={() => setShowUpgradeModal(false)} onUpgrade={handleUpgrade} />}
       </div>
     );
   }

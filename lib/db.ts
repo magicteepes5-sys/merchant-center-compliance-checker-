@@ -32,4 +32,12 @@ export async function ensureSchema() {
     result_json JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );`;
+
+  await sql`CREATE TABLE IF NOT EXISTS billing_events (
+    id TEXT PRIMARY KEY,
+    event_type TEXT NOT NULL,
+    user_id TEXT,
+    credits_added INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );`;
 }

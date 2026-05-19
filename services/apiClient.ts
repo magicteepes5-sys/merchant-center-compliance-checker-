@@ -58,3 +58,9 @@ export async function getAuditHistory(): Promise<AuditHistoryItem[]> {
   const data = await req<{ history: AuditHistoryItem[] }>('/api/audit-history');
   return data.history || [];
 }
+
+export async function createCheckoutSession(): Promise<string> {
+  const data = await req<{ url: string }>('/api/create-checkout-session', { method: 'POST' });
+  if (!data?.url) throw new Error('Stripe checkout URL missing');
+  return data.url;
+}

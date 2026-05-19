@@ -16,6 +16,7 @@
     "@neondatabase/serverless": "^0.10.4",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
+    "stripe": "^16.12.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
