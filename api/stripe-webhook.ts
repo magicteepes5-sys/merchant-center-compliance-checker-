@@ -29,7 +29,7 @@ export default async function handler(req: any, res: any) {
     return res.end('Stripe webhook not configured');
   }
 
-  const stripe = new Stripe(stripeKey, { apiVersion: '2025-04-30.basil' });
+  const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
 
   try {
     await ensureSchema();
@@ -45,7 +45,7 @@ export default async function handler(req: any, res: any) {
 
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
-      const userId = session.metadata?.userId || session.subscription_details?.metadata?.userId;
+      const userId = session.metadata?.userId;
       if (userId) {
         const existing = await sql`SELECT id FROM billing_events WHERE id = ${event.id} LIMIT 1` as any[];
         if (existing.length === 0) {

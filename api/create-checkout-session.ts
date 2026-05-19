@@ -23,7 +23,7 @@ export default async function handler(req: any, res: any) {
   await ensureSchema();
 
   try {
-    const stripe = new Stripe(stripeKey, { apiVersion: '2025-04-30.basil' });
+    const stripe = new Stripe(stripeKey, { apiVersion: '2024-06-20' });
     const base = appBaseUrl(req);
     const checkout = await stripe.checkout.sessions.create({
       mode: 'subscription',
