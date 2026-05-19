@@ -174,7 +174,7 @@ const App: React.FC = () => {
                   onClick={() => void handleUpgrade()}
                   className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
                 >
-                  Upgrade with Stripe
+                  Upgrade
                 </button>
               </div>
             )}

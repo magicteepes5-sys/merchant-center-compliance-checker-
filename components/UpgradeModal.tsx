@@ -25,7 +25,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose, onUpgrade }
             onClick={() => void onUpgrade()}
             className="block w-full py-3.5 px-4 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
           >
-            Upgrade with Stripe
+            Upgrade
           </button>
           <a
             href="mailto:hello@mc-checker.com?subject=Need%20more%20MC%20Checker%20credits"
