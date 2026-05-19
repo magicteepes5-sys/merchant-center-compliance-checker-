@@ -1,4 +1,4 @@
-import type { AnalysisResult, ProductFeedAnalysisResult, User } from '../types';
+import type { AnalysisResult, AuditHistoryItem, ProductFeedAnalysisResult, User } from '../types';
 
 const TOKEN_KEY = 'mc_token';
 
@@ -52,4 +52,9 @@ export async function analyzeWebsite(content: string): Promise<{result: Analysis
 
 export async function analyzeFeed(feedContent: string): Promise<{result: ProductFeedAnalysisResult; searchesRemaining:number}> {
   return req('/api/analyze-feed', { method:'POST', body: JSON.stringify({ feedContent }) });
+}
+
+export async function getAuditHistory(): Promise<AuditHistoryItem[]> {
+  const data = await req<{ history: AuditHistoryItem[] }>('/api/audit-history');
+  return data.history || [];
 }

@@ -20,9 +20,12 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({ onClose }) => {
         </p>
         
         <div className="space-y-3">
-          <button className="w-full py-3.5 px-4 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-lg">
-            Upgrade to Pro
-          </button>
+          <a
+            href="mailto:hello@mc-checker.com?subject=Need%20more%20MC%20Checker%20credits"
+            className="block w-full py-3.5 px-4 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+          >
+            Need more credits? Contact us
+          </a>
           <button 
             onClick={onClose}
             className="w-full py-3.5 px-4 bg-white text-slate-500 font-medium rounded-xl hover:bg-slate-50 transition-colors"

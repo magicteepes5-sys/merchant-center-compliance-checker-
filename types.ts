@@ -29,3 +29,12 @@ export interface User {
   email: string;
   searchesRemaining: number;
 }
+
+export interface AuditHistoryItem {
+  id: string;
+  type: 'website' | 'feed' | string;
+  status: string;
+  summary: string;
+  inputExcerpt: string;
+  createdAt: string;
+}

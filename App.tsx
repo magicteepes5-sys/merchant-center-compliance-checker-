@@ -3,12 +3,13 @@ import { Header } from './components/Header';
 import { InputForm } from './components/InputForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { Loader } from './components/Loader';
-import type { AnalysisResult, ProductFeedAnalysisResult, User } from './types';
+import type { AnalysisResult, AuditHistoryItem, ProductFeedAnalysisResult, User } from './types';
 import { Footer } from './components/Footer';
 import { AuthScreen } from './components/AuthScreen';
 import { UpgradeModal } from './components/UpgradeModal';
 import { LandingPage } from './components/LandingPage';
-import { analyzeFeed, analyzeWebsite, getMe, login, logoutLocal, signup } from './services/apiClient';
+import { AuditHistory } from './components/AuditHistory';
+import { analyzeFeed, analyzeWebsite, getAuditHistory, getMe, login, logoutLocal, signup } from './services/apiClient';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -27,6 +28,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -42,6 +44,22 @@ const App: React.FC = () => {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setAuditHistory([]);
+      return;
+    }
+
+    (async () => {
+      try {
+        const history = await getAuditHistory();
+        setAuditHistory(history);
+      } catch {
+        setAuditHistory([]);
+      }
+    })();
+  }, [user]);
 
   const handleSignup = async (email: string, pass: string) => {
     setAuthError(null);
@@ -109,6 +127,9 @@ const App: React.FC = () => {
         localStorage.setItem('currentUser', JSON.stringify(updated));
         setUser(updated as User);
       }
+
+      const history = await getAuditHistory();
+      setAuditHistory(history);
     } catch (err: any) {
       setError(err?.message || 'An error occurred during analysis.');
     } finally {
@@ -133,6 +154,20 @@ const App: React.FC = () => {
 
         <main className="container mx-auto px-4 py-12 max-w-5xl">
           <div className="space-y-12">
+            {user.searchesRemaining <= 1 && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p className="font-bold">Low credits: {user.searchesRemaining} left</p>
+                  <p className="text-sm">Need more credits before Stripe is ready? Contact us and we can top up manually.</p>
+                </div>
+                <a
+                  href="mailto:hello@mc-checker.com?subject=MC%20Checker%20manual%20credit%20top-up"
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+                >
+                  Contact for more credits
+                </a>
+              </div>
+            )}
             <InputForm onAnalyze={handleAnalysis} isLoading={isLoading} />
             {isLoading && <Loader />}
             {error && (
@@ -142,6 +177,7 @@ const App: React.FC = () => {
               </div>
             )}
             <ResultsDisplay result={analysisResult || undefined} productResult={productAnalysisResult || undefined} />
+            <AuditHistory items={auditHistory} />
           </div>
         </main>
 
