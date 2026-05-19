@@ -1,8 +1,69 @@
-import { GoogleGenAI, Type } from '@google/genai';
 import { ensureSchema, sql } from '../lib/db';
 import { getSession, send } from './_shared';
 
-const schema = {type: Type.OBJECT,properties:{status:{type:Type.STRING,enum:['Approved','Rejected']},summary:{type:Type.STRING},issues:{type:Type.ARRAY,items:{type:Type.OBJECT,properties:{policy:{type:Type.STRING},problem:{type:Type.STRING},recommendation:{type:Type.STRING}},required:['policy','problem','recommendation']}}},required:['status','summary','issues']};
+type WebsiteResult = {
+  status: 'Approved' | 'Rejected';
+  summary: string;
+  issues: Array<{
+    policy: string;
+    problem: string;
+    recommendation: string;
+  }>;
+};
+
+function parseJsonObject(text: string): any {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start >= 0 && end > start) {
+      return JSON.parse(text.slice(start, end + 1));
+    }
+    throw new Error('Invalid JSON response');
+  }
+}
+
+async function analyzeWithOpenAI(content: string, apiKey: string): Promise<WebsiteResult> {
+  const resp = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4.1-mini',
+      input: [
+        {
+          role: 'system',
+          content:
+            'You are an expert Google Merchant Center policy analyst. Return ONLY valid JSON with this exact shape: {"status":"Approved|Rejected","summary":"string","issues":[{"policy":"string","problem":"string","recommendation":"string"}]}.',
+        },
+        {
+          role: 'user',
+          content: `Analyze this website content for Google Merchant Center policy risk:\n\n${content}`,
+        },
+      ],
+      temperature: 0.2,
+      max_output_tokens: 900,
+    }),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`OpenAI error: ${resp.status} ${err}`);
+  }
+
+  const data: any = await resp.json();
+  const text = data?.output_text || '';
+  const parsed = parseJsonObject(text);
+
+  if (!parsed?.status || !parsed?.summary || !Array.isArray(parsed?.issues)) {
+    throw new Error('Invalid model output shape');
+  }
+
+  return parsed as WebsiteResult;
+}
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' });
@@ -18,23 +79,18 @@ export default async function handler(req: any, res: any) {
   const content = String(req.body?.content || '').trim();
   if (!content) return send(res, 400, { error: 'content is required' });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return send(res, 500, { error: 'GEMINI_API_KEY missing' });
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return send(res, 500, { error: 'OPENAI_API_KEY missing' });
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const prompt = `You are an expert Google Merchant Center policy analyst. Analyze the content and output JSON only.
-
-${content}`;
-    const resp = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt, config: { responseMimeType: 'application/json', responseSchema: schema, temperature: 0.2 } });
-    const result = JSON.parse(resp.text.trim());
+    const result = await analyzeWithOpenAI(content, apiKey);
 
     await sql`UPDATE users SET searches_remaining = searches_remaining - 1 WHERE id = ${session.userId}`;
-    await sql`INSERT INTO analyses (user_id, analysis_type, input_excerpt, result_json) VALUES (${session.userId}, 'website', ${content.slice(0,300)}, ${JSON.stringify(result)}::jsonb)`;
+    await sql`INSERT INTO analyses (user_id, analysis_type, input_excerpt, result_json) VALUES (${session.userId}, 'website', ${content.slice(0, 300)}, ${JSON.stringify(result)}::jsonb)`;
     const latest = await sql`SELECT searches_remaining FROM users WHERE id = ${session.userId}`;
 
     return send(res, 200, { result, searchesRemaining: latest[0].searches_remaining });
-  } catch {
-    return send(res, 500, { error: 'Analysis failed' });
+  } catch (error: any) {
+    return send(res, 500, { error: 'Analysis failed', detail: String(error?.message || error) });
   }
 }
