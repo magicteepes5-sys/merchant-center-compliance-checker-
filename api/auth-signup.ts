@@ -18,6 +18,6 @@ export default async function handler(req: any, res: any) {
     return send(res, 200, { token, user: { uid: user.id, email: user.email, searchesRemaining: user.searches_remaining } });
   } catch (e: any) {
     if (String(e?.message || '').toLowerCase().includes('duplicate')) return send(res, 409, { error: 'User already exists' });
-    return send(res, 500, { error: 'Signup failed' });
+    return send(res, 500, { error: 'Signup failed', detail: String(e?.message || e) });
   }
 }

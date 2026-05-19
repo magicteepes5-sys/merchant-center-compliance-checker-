@@ -15,7 +15,7 @@ export default async function handler(req: any, res: any) {
     if (!ok) return send(res, 401, { error: 'Invalid credentials' });
     const token = signToken({ userId: row.id, email: row.email });
     return send(res, 200, { token, user: { uid: row.id, email: row.email, searchesRemaining: row.searches_remaining } });
-  } catch {
-    return send(res, 500, { error: 'Login failed' });
+  } catch (e: any) {
+    return send(res, 500, { error: 'Login failed', detail: String(e?.message || e) });
   }
 }
