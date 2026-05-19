@@ -1,4 +1,4 @@
-import { verifyToken } from '../lib/auth';
+import { verifyToken } from '../lib/auth.js';
 
 export function send(res: any, status: number, body: any) {
   res.status(status).json(body);

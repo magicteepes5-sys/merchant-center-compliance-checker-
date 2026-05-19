@@ -1,5 +1,5 @@
-import { ensureSchema, sql } from '../lib/db';
-import { getSession, send } from './_shared';
+import { ensureSchema, sql } from '../lib/db.js';
+import { getSession, send } from './_shared.js';
 
 type FeedResult = {
   summary: string;

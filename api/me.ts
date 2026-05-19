@@ -1,5 +1,5 @@
-import { ensureSchema, sql } from '../lib/db';
-import { getSession, send } from './_shared';
+import { ensureSchema, sql } from '../lib/db.js';
+import { getSession, send } from './_shared.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') return send(res, 405, { error: 'Method not allowed' });

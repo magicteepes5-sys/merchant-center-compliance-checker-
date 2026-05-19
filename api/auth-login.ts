@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
-import { ensureSchema, sql } from '../lib/db';
-import { signToken } from '../lib/auth';
-import { send } from './_shared';
+import { ensureSchema, sql } from '../lib/db.js';
+import { signToken } from '../lib/auth.js';
+import { send } from './_shared.js';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' });
