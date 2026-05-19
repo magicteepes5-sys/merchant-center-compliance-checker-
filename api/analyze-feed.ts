@@ -13,16 +13,35 @@ type FeedResult = {
 };
 
 function parseJsonObject(text: string): any {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) throw new Error('Empty model response text');
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(trimmed);
   } catch {
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
+    const start = trimmed.indexOf('{');
+    const end = trimmed.lastIndexOf('}');
     if (start >= 0 && end > start) {
-      return JSON.parse(text.slice(start, end + 1));
+      return JSON.parse(trimmed.slice(start, end + 1));
     }
-    throw new Error('Invalid JSON response');
+    throw new Error(`Invalid JSON response: ${trimmed.slice(0, 240)}`);
   }
+}
+
+function extractResponseText(data: any): string {
+  if (typeof data?.output_text === 'string' && data.output_text.trim()) {
+    return data.output_text;
+  }
+
+  const parts: string[] = [];
+  for (const out of data?.output || []) {
+    for (const c of out?.content || []) {
+      if (c?.type === 'output_text' && typeof c?.text === 'string') parts.push(c.text);
+      if (c?.type === 'text' && typeof c?.text === 'string') parts.push(c.text);
+    }
+  }
+
+  return parts.join('\n').trim();
 }
 
 async function analyzeWithOpenAI(feedContent: string, apiKey: string): Promise<FeedResult> {
@@ -45,6 +64,36 @@ async function analyzeWithOpenAI(feedContent: string, apiKey: string): Promise<F
           content: `Analyze this product feed for Merchant Center compliance risk:\n\n${feedContent}`,
         },
       ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'feed_audit',
+          strict: true,
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              summary: { type: 'string' },
+              safeProductCount: { type: 'number' },
+              riskyProducts: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    id: { type: 'string' },
+                    title: { type: 'string' },
+                    policy: { type: 'string' },
+                    reason: { type: 'string' },
+                  },
+                  required: ['id', 'title', 'policy', 'reason'],
+                },
+              },
+            },
+            required: ['summary', 'safeProductCount', 'riskyProducts'],
+          },
+        },
+      },
       temperature: 0.1,
       max_output_tokens: 1200,
     }),
@@ -56,11 +105,11 @@ async function analyzeWithOpenAI(feedContent: string, apiKey: string): Promise<F
   }
 
   const data: any = await resp.json();
-  const text = data?.output_text || '';
+  const text = extractResponseText(data);
   const parsed = parseJsonObject(text);
 
   if (!parsed?.summary || typeof parsed?.safeProductCount !== 'number' || !Array.isArray(parsed?.riskyProducts)) {
-    throw new Error('Invalid model output shape');
+    throw new Error(`Invalid model output shape: ${JSON.stringify(parsed).slice(0, 240)}`);
   }
 
   return parsed as FeedResult;

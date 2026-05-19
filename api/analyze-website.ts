@@ -12,16 +12,35 @@ type WebsiteResult = {
 };
 
 function parseJsonObject(text: string): any {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) throw new Error('Empty model response text');
+
   try {
-    return JSON.parse(text);
+    return JSON.parse(trimmed);
   } catch {
-    const start = text.indexOf('{');
-    const end = text.lastIndexOf('}');
+    const start = trimmed.indexOf('{');
+    const end = trimmed.lastIndexOf('}');
     if (start >= 0 && end > start) {
-      return JSON.parse(text.slice(start, end + 1));
+      return JSON.parse(trimmed.slice(start, end + 1));
     }
-    throw new Error('Invalid JSON response');
+    throw new Error(`Invalid JSON response: ${trimmed.slice(0, 240)}`);
   }
+}
+
+function extractResponseText(data: any): string {
+  if (typeof data?.output_text === 'string' && data.output_text.trim()) {
+    return data.output_text;
+  }
+
+  const parts: string[] = [];
+  for (const out of data?.output || []) {
+    for (const c of out?.content || []) {
+      if (c?.type === 'output_text' && typeof c?.text === 'string') parts.push(c.text);
+      if (c?.type === 'text' && typeof c?.text === 'string') parts.push(c.text);
+    }
+  }
+
+  return parts.join('\n').trim();
 }
 
 async function analyzeWithOpenAI(content: string, apiKey: string): Promise<WebsiteResult> {
@@ -44,6 +63,35 @@ async function analyzeWithOpenAI(content: string, apiKey: string): Promise<Websi
           content: `Analyze this website content for Google Merchant Center policy risk:\n\n${content}`,
         },
       ],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'website_audit',
+          strict: true,
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              status: { type: 'string', enum: ['Approved', 'Rejected'] },
+              summary: { type: 'string' },
+              issues: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    policy: { type: 'string' },
+                    problem: { type: 'string' },
+                    recommendation: { type: 'string' },
+                  },
+                  required: ['policy', 'problem', 'recommendation'],
+                },
+              },
+            },
+            required: ['status', 'summary', 'issues'],
+          },
+        },
+      },
       temperature: 0.2,
       max_output_tokens: 900,
     }),
@@ -55,11 +103,11 @@ async function analyzeWithOpenAI(content: string, apiKey: string): Promise<Websi
   }
 
   const data: any = await resp.json();
-  const text = data?.output_text || '';
+  const text = extractResponseText(data);
   const parsed = parseJsonObject(text);
 
   if (!parsed?.status || !parsed?.summary || !Array.isArray(parsed?.issues)) {
-    throw new Error('Invalid model output shape');
+    throw new Error(`Invalid model output shape: ${JSON.stringify(parsed).slice(0, 240)}`);
   }
 
   return parsed as WebsiteResult;

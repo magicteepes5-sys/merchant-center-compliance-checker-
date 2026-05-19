@@ -49,7 +49,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) =>
         <div className="container mx-auto px-4 text-center max-w-5xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide mb-8 animate-fade-in">
             <SparklesIcon className="w-4 h-4" />
-            <span>Powered by Gemini 2.5 AI</span>
+            <span>Powered by OpenAI intelligence</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-8 animate-fade-in-up">
@@ -103,21 +103,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) =>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
               <div className="p-4">
                  <div className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400 mb-2">
-                    150,000+
+                    3
                  </div>
-                 <div className="text-slate-400 font-medium">Merchant Accounts Analyzed</div>
+                 <div className="text-slate-400 font-medium">Free Audits to Start</div>
               </div>
               <div className="p-4">
                  <div className="text-4xl md:text-5xl font-extrabold text-white mb-2">
-                    24/7
+                    &lt; 60s
                  </div>
-                 <div className="text-slate-400 font-medium">Automated Policy Monitoring</div>
+                 <div className="text-slate-400 font-medium">Average First Risk Report</div>
               </div>
               <div className="p-4">
                  <div className="text-4xl md:text-5xl font-extrabold text-emerald-400 mb-2">
-                    $0
+                    24/7
                  </div>
-                 <div className="text-slate-400 font-medium">Cost to Start Your Audit</div>
+                 <div className="text-slate-400 font-medium">Always-on Monitoring Workflow</div>
               </div>
            </div>
            
@@ -265,6 +265,75 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) =>
                </div>
             </div>
          </div>
+      </section>
+
+      {/* How it works */}
+      <section className="py-24 bg-slate-50 relative z-10">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">How it works</h2>
+            <p className="text-lg text-slate-500">From signup to fix plan in minutes.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              { step: '01', title: 'Paste store policies or feed', desc: 'Add website policy sections or XML feed snippet.' },
+              { step: '02', title: 'Run compliance analysis', desc: 'We scan for Merchant Center policy risks and weak trust signals.' },
+              { step: '03', title: 'Apply fix-first checklist', desc: 'Get prioritized recommendations you can execute immediately.' },
+            ].map((item) => (
+              <div key={item.step} className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div className="text-indigo-600 text-xs font-bold tracking-wider mb-3">STEP {item.step}</div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+                <p className="text-slate-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section className="py-24 bg-white relative z-10">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Simple pricing</h2>
+            <p className="text-lg text-slate-500">Start free, then upgrade when you need more scans.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-2xl border border-slate-200 p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Starter</h3>
+              <p className="text-3xl font-extrabold text-slate-900 mb-4">$0</p>
+              <ul className="space-y-2 text-sm text-slate-600 mb-6">
+                <li>• 3 lifetime audits</li>
+                <li>• Website + feed checks</li>
+                <li>• Basic recommendations</li>
+              </ul>
+              <button onClick={onStart} className="w-full px-4 py-2.5 rounded-full bg-slate-900 text-white font-bold">Start Free</button>
+            </div>
+
+            <div className="rounded-2xl border-2 border-indigo-500 p-6 shadow-lg shadow-indigo-100 relative">
+              <span className="absolute -top-3 right-4 text-xs font-bold bg-indigo-600 text-white px-2 py-1 rounded-full">Most popular</span>
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Growth</h3>
+              <p className="text-3xl font-extrabold text-slate-900 mb-4">$29<span className="text-base font-semibold text-slate-500">/mo</span></p>
+              <ul className="space-y-2 text-sm text-slate-600 mb-6">
+                <li>• 100 audits / month</li>
+                <li>• Priority fix-first checklist</li>
+                <li>• Email support</li>
+              </ul>
+              <button onClick={onStart} className="w-full px-4 py-2.5 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700">Choose Growth</button>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-2">Scale</h3>
+              <p className="text-3xl font-extrabold text-slate-900 mb-4">$79<span className="text-base font-semibold text-slate-500">/mo</span></p>
+              <ul className="space-y-2 text-sm text-slate-600 mb-6">
+                <li>• 500 audits / month</li>
+                <li>• Team workflow ready</li>
+                <li>• Priority support</li>
+              </ul>
+              <button onClick={onStart} className="w-full px-4 py-2.5 rounded-full bg-slate-900 text-white font-bold">Choose Scale</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Final CTA */}

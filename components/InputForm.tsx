@@ -10,13 +10,64 @@ interface InputFormProps {
 
 export const InputForm: React.FC<InputFormProps> = ({ onAnalyze, isLoading }) => {
   const [url, setUrl] = useState('');
-  const [content, setContent] = useState('');
+  const [aboutUs, setAboutUs] = useState('');
+  const [contact, setContact] = useState('');
+  const [privacyPolicy, setPrivacyPolicy] = useState('');
+  const [refundReturnsPolicy, setRefundReturnsPolicy] = useState('');
+  const [shippingPolicy, setShippingPolicy] = useState('');
+  const [paymentPolicy, setPaymentPolicy] = useState('');
+  const [otherPolicies, setOtherPolicies] = useState('');
   const [feedContent, setFeedContent] = useState('');
   const [activeTab, setActiveTab] = useState<'website' | 'feed'>('website');
+  const [openSection, setOpenSection] = useState<string>('aboutUs');
+
+  const buildWebsiteContent = () => {
+    const sections = [
+      ['Store URL', url],
+      ['About Us', aboutUs],
+      ['Contact', contact],
+      ['Privacy Policy', privacyPolicy],
+      ['Refund and Returns Policy', refundReturnsPolicy],
+      ['Shipping Policy', shippingPolicy],
+      ['Payment Policy', paymentPolicy],
+      ['Other Policies', otherPolicies],
+    ];
+
+    return sections
+      .filter(([, text]) => String(text || '').trim())
+      .map(([title, text]) => `## ${title}\n${String(text).trim()}`)
+      .join('\n\n');
+  };
+
+  const hasWebsitePolicyContent = [
+    aboutUs,
+    contact,
+    privacyPolicy,
+    refundReturnsPolicy,
+    shippingPolicy,
+    paymentPolicy,
+    otherPolicies,
+  ].some((v) => String(v || '').trim());
+
+  const policySections = [
+    { key: 'aboutUs', label: 'About Us', value: aboutUs, setValue: setAboutUs, rows: 4, required: true, placeholder: 'Paste About Us text...' },
+    { key: 'contact', label: 'Contact', value: contact, setValue: setContact, rows: 3, required: false, placeholder: 'Paste Contact page text...' },
+    { key: 'privacyPolicy', label: 'Privacy Policy', value: privacyPolicy, setValue: setPrivacyPolicy, rows: 4, required: false, placeholder: 'Paste Privacy Policy text...' },
+    { key: 'refundReturnsPolicy', label: 'Refund and Returns Policy', value: refundReturnsPolicy, setValue: setRefundReturnsPolicy, rows: 4, required: false, placeholder: 'Paste Refund/Returns Policy text...' },
+    { key: 'shippingPolicy', label: 'Shipping Policy', value: shippingPolicy, setValue: setShippingPolicy, rows: 4, required: false, placeholder: 'Paste Shipping Policy text...' },
+    { key: 'paymentPolicy', label: 'Payment Policy', value: paymentPolicy, setValue: setPaymentPolicy, rows: 3, required: false, placeholder: 'Paste Payment Policy text...' },
+    { key: 'otherPolicies', label: 'Other Policies', value: otherPolicies, setValue: setOtherPolicies, rows: 4, required: false, placeholder: 'Paste any additional policy text...' },
+  ] as const;
+
+  const filledPolicyCount = policySections.filter((s) => String(s.value || '').trim()).length;
+  const policyCompletionPct = Math.round((filledPolicyCount / policySections.length) * 100);
+  const missingImportantPolicies = policySections
+    .filter((s) => !String(s.value || '').trim() && s.key !== 'otherPolicies')
+    .map((s) => s.label);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAnalyze(url, content, feedContent);
+    onAnalyze(url, buildWebsiteContent(), feedContent);
   };
 
   return (
@@ -52,7 +103,7 @@ export const InputForm: React.FC<InputFormProps> = ({ onAnalyze, isLoading }) =>
                <div className="md:col-span-1">
                   <h3 className="text-lg font-semibold text-slate-900">Website Details</h3>
                   <p className="text-sm text-slate-500 mt-1">
-                    Provide your store URL and content. The AI needs the text content (About Us, Policies, etc.) to detect violations accurately.
+                    Fill each policy section separately. This helps the AI detect Merchant Center issues with better context and precision.
                   </p>
                </div>
                <div className="md:col-span-2 space-y-4">
@@ -70,19 +121,68 @@ export const InputForm: React.FC<InputFormProps> = ({ onAnalyze, isLoading }) =>
                     />
                   </div>
                   
-                  <div>
-                    <label htmlFor="content" className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 ml-1">
-                      Website Text Content <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      id="content"
-                      rows={8}
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      className="block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none resize-none"
-                      placeholder="Paste text from your About Us, Returns, Shipping, and Contact pages here..."
-                      required={activeTab === 'website'}
-                    />
+                  <div className="space-y-3">
+                    {policySections.map((section) => {
+                      const isOpen = openSection === section.key;
+                      const hasText = String(section.value || '').trim().length > 0;
+
+                      return (
+                        <div key={section.key} className="rounded-xl border border-slate-200 bg-slate-50/40 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => setOpenSection(isOpen ? '' : section.key)}
+                            className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-slate-100/70 transition-colors"
+                          >
+                            <span className="text-sm font-semibold text-slate-800">
+                              {section.label} {section.required ? <span className="text-red-500">*</span> : null}
+                            </span>
+                            <span className="text-slate-500 text-sm">{isOpen ? '▾' : '▸'}</span>
+                          </button>
+
+                          {isOpen && (
+                            <div className="px-4 pb-4 pt-1 border-t border-slate-200 bg-white">
+                              <textarea
+                                id={section.key}
+                                rows={section.rows}
+                                value={section.value}
+                                onChange={(e) => section.setValue(e.target.value)}
+                                className="mt-2 block w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none resize-none"
+                                placeholder={section.placeholder}
+                                required={activeTab === 'website' && section.required}
+                              />
+                            </div>
+                          )}
+
+                          {!isOpen && hasText && (
+                            <div className="px-4 pb-3 text-xs text-emerald-700">Filled</div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm font-semibold text-indigo-900">Policy Coverage Pre-check</p>
+                      <p className="text-sm font-bold text-indigo-700">{filledPolicyCount}/{policySections.length} ({policyCompletionPct}%)</p>
+                    </div>
+
+                    <div className="h-2 w-full rounded-full bg-indigo-100 overflow-hidden mb-3">
+                      <div className="h-full bg-indigo-500" style={{ width: `${policyCompletionPct}%` }} />
+                    </div>
+
+                    {missingImportantPolicies.length > 0 ? (
+                      <div>
+                        <p className="text-xs font-semibold text-amber-700 mb-1">Recommended to add before analyze:</p>
+                        <ul className="text-xs text-amber-800 list-disc ml-4 space-y-0.5">
+                          {missingImportantPolicies.map((label) => (
+                            <li key={label}>{label}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-xs font-semibold text-emerald-700">Great coverage. Your policy set looks complete for a strong first audit.</p>
+                    )}
                   </div>
                </div>
             </div>
@@ -123,7 +223,7 @@ export const InputForm: React.FC<InputFormProps> = ({ onAnalyze, isLoading }) =>
         <div className="flex justify-end pt-6 border-t border-slate-100">
           <button
             type="submit"
-            disabled={isLoading || (activeTab === 'website' && !content) || (activeTab === 'feed' && !feedContent)}
+            disabled={isLoading || (activeTab === 'website' && !hasWebsitePolicyContent) || (activeTab === 'feed' && !feedContent)}
             className="group relative inline-flex items-center justify-center px-8 py-3.5 text-sm font-bold text-white transition-all duration-200 bg-slate-900 rounded-full hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
           >
             {isLoading ? (
