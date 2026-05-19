@@ -1,5 +1,6 @@
-import * as jwt from 'jsonwebtoken';
+import * as jwtModule from 'jsonwebtoken';
 
+const jwt: any = (jwtModule as any)?.default ?? (jwtModule as any);
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 export type SessionUser = { userId: string; email: string };
