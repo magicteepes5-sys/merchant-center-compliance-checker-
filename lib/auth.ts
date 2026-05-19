@@ -8,8 +8,7 @@ export function signToken(payload: SessionUser) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }
 
-export function verifyToken(authHeader?: string): SessionUser {
-  if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized');
-  const token = authHeader.replace('Bearer ', '').trim();
+export function verifyToken(token?: string): SessionUser {
+  if (!token) throw new Error('Unauthorized');
   return jwt.verify(token, JWT_SECRET) as SessionUser;
 }
