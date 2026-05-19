@@ -15,8 +15,18 @@ async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...(init.headers || {})
     }
   });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json?.detail ? `${json?.error || 'Request failed'}: ${json.detail}` : (json?.error || 'Request failed'));
+  const raw = await res.text();
+  let json: any = null;
+  try { json = raw ? JSON.parse(raw) : null; } catch {}
+
+  if (!res.ok) {
+    const message = json?.detail
+      ? `${json?.error || 'Request failed'}: ${json.detail}`
+      : (json?.error || raw || `Request failed (${res.status})`);
+    throw new Error(message);
+  }
+
+  if (!json) throw new Error(`Invalid JSON response (${res.status})`);
   return json as T;
 }
 
