@@ -64,3 +64,9 @@ export async function createCheckoutSession(): Promise<string> {
   if (!data?.url) throw new Error('Stripe checkout URL missing');
   return data.url;
 }
+
+export async function verifyEmailToken(token: string): Promise<User> {
+  const data = await req<{ token: string; user: User }>('/api/auth-verify-email', { method: 'POST', body: JSON.stringify({ token }) });
+  if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
+  return data.user;
+}

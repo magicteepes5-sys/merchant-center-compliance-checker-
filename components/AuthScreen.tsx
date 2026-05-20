@@ -119,7 +119,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, onSignup, error
             </p>
             {!isLogin && (
                 <p className="text-xs text-slate-400 mt-3">
-                    Includes 3 free lifetime searches. No credit card required.
+                    Includes 3 free credits after email verification. No credit card required.
                 </p>
             )}
           </div>

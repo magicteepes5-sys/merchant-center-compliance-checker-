@@ -28,6 +28,7 @@ export interface User {
   uid: string;
   email: string;
   searchesRemaining: number;
+  emailVerified?: boolean;
 }
 
 export interface AuditHistoryItem {

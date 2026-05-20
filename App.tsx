@@ -9,7 +9,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { UpgradeModal } from './components/UpgradeModal';
 import { LandingPage } from './components/LandingPage';
 import { AuditHistory } from './components/AuditHistory';
-import { analyzeFeed, analyzeWebsite, createCheckoutSession, getAuditHistory, getMe, login, logoutLocal, signup } from './services/apiClient';
+import { analyzeFeed, analyzeWebsite, createCheckoutSession, getAuditHistory, getMe, login, logoutLocal, signup, verifyEmailToken } from './services/apiClient';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(() => {
@@ -21,6 +21,7 @@ const App: React.FC = () => {
   });
 
   const [showAuth, setShowAuth] = useState(false);
+  const [showLanding, setShowLanding] = useState(false);
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -33,9 +34,20 @@ const App: React.FC = () => {
   useEffect(() => {
     (async () => {
       try {
-        const me = await getMe();
-        localStorage.setItem('currentUser', JSON.stringify(me));
-        setUser(me);
+        const params = new URLSearchParams(window.location.search);
+        const verifyToken = params.get('verify');
+        if (verifyToken) {
+          const verified = await verifyEmailToken(verifyToken);
+          localStorage.setItem('currentUser', JSON.stringify(verified));
+          setUser(verified);
+          params.delete('verify');
+          const next = params.toString();
+          window.history.replaceState({}, '', `${window.location.pathname}${next ? `?${next}` : ''}`);
+        } else {
+          const me = await getMe();
+          localStorage.setItem('currentUser', JSON.stringify(me));
+          setUser(me);
+        }
       } catch {
         logoutLocal();
         setUser(null);
@@ -67,6 +79,7 @@ const App: React.FC = () => {
       const newUser = await signup(email, pass);
       localStorage.setItem('currentUser', JSON.stringify(newUser));
       setUser(newUser);
+      setShowLanding(false);
     } catch (e: any) {
       setAuthError(e?.message || 'Signup failed');
       throw e;
@@ -79,6 +92,7 @@ const App: React.FC = () => {
       const loggedUser = await login(email, pass);
       localStorage.setItem('currentUser', JSON.stringify(loggedUser));
       setUser(loggedUser);
+      setShowLanding(false);
     } catch (e: any) {
       setAuthError(e?.message || 'Invalid email or password');
       throw e;
@@ -151,6 +165,10 @@ const App: React.FC = () => {
     return <div className="min-h-screen grid place-items-center text-slate-500">Loading...</div>;
   }
 
+  if (user && showLanding) {
+    return <LandingPage onStart={() => setShowLanding(false)} onLogin={() => setShowLanding(false)} />;
+  }
+
   if (user) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-800">
@@ -160,10 +178,16 @@ const App: React.FC = () => {
           <div className="absolute -bottom-32 left-1/2 w-96 h-96 bg-pink-200/20 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-blob animation-delay-4000"></div>
         </div>
 
-        <Header user={user} onLogout={handleLogout} />
+        <Header user={user} onLogout={handleLogout} onShowLanding={() => setShowLanding(true)} />
 
         <main className="container mx-auto px-4 py-12 max-w-5xl">
           <div className="space-y-12">
+            {!user.emailVerified && (
+              <div className="bg-blue-50 border border-blue-200 text-blue-900 p-4 rounded-2xl">
+                <p className="font-bold">Verify your email to unlock free credits.</p>
+                <p className="text-sm">Open the verification link sent to your inbox. If mail is not configured yet, use the verify link returned by signup response in non-production mode.</p>
+              </div>
+            )}
             {user.searchesRemaining <= 1 && (
               <div className="bg-amber-50 border border-amber-200 text-amber-900 p-4 rounded-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>

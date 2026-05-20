@@ -5,9 +5,10 @@ import type { User } from '../types';
 interface HeaderProps {
   user: User;
   onLogout: () => void;
+  onShowLanding: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+export const Header: React.FC<HeaderProps> = ({ user, onLogout, onShowLanding }) => {
   return (
     <header className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-slate-200/60 supports-[backdrop-filter]:bg-white/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -29,6 +30,12 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           <div className="h-8 w-[1px] bg-slate-200 hidden sm:block"></div>
 
           <div className="flex items-center gap-3">
+             <button
+                onClick={onShowLanding}
+                className="text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors"
+             >
+                Home
+             </button>
              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
                 {user.email.charAt(0).toUpperCase()}
              </div>
