@@ -29,6 +29,7 @@ export interface User {
   email: string;
   searchesRemaining: number;
   emailVerified?: boolean;
+  isPaid?: boolean;
 }
 
 export interface AuditHistoryItem {

@@ -28,6 +28,7 @@ export async function ensureSchema() {
     verification_token_expires_at TIMESTAMPTZ,
     trial_granted_at TIMESTAMPTZ,
     signup_fingerprint TEXT,
+    is_paid BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
   );`;
 
@@ -36,6 +37,7 @@ export async function ensureSchema() {
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token_expires_at TIMESTAMPTZ;`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS trial_granted_at TIMESTAMPTZ;`;
   await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS signup_fingerprint TEXT;`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_paid BOOLEAN NOT NULL DEFAULT FALSE;`;
   await sql`CREATE UNIQUE INDEX IF NOT EXISTS users_signup_fingerprint_key ON users(signup_fingerprint) WHERE signup_fingerprint IS NOT NULL;`;
 
   await sql`CREATE TABLE IF NOT EXISTS analyses (

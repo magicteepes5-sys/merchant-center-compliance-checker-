@@ -233,7 +233,7 @@ const App: React.FC = () => {
                 <AuditHistory items={auditHistory} />
               </>
             ) : (
-              <FeedCleanerPanel />
+              <FeedCleanerPanel isPaid={!!user.isPaid} onUpgrade={() => void handleUpgrade()} />
             )}
           </div>
         </main>

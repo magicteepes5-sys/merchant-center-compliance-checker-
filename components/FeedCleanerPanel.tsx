@@ -25,7 +25,12 @@ const downloadBlob = (blob: Blob, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export const FeedCleanerPanel: React.FC = () => {
+interface FeedCleanerPanelProps {
+  isPaid?: boolean;
+  onUpgrade?: () => void;
+}
+
+export const FeedCleanerPanel: React.FC<FeedCleanerPanelProps> = ({ isPaid = false, onUpgrade }) => {
   const [csvText, setCsvText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isApplyingFixes, setIsApplyingFixes] = useState(false);
@@ -141,18 +146,18 @@ export const FeedCleanerPanel: React.FC = () => {
 
           <button
             onClick={() => void onApplySafeFixes()}
-            disabled={!result?.jobId || isApplyingFixes}
+            disabled={!result?.jobId || isApplyingFixes || !isPaid}
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isApplyingFixes ? 'Applying...' : 'Apply Safe Fixes'}
+            {isApplyingFixes ? 'Applying...' : 'Apply Safe Fixes (Pro)'}
           </button>
 
           <button
             onClick={() => void onDownloadCleanedCsv()}
-            disabled={!result?.jobId}
+            disabled={!result?.jobId || !isPaid}
             className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 disabled:opacity-50"
           >
-            Download Cleaned CSV
+            Download Cleaned CSV (Pro)
           </button>
 
           <button
@@ -163,6 +168,20 @@ export const FeedCleanerPanel: React.FC = () => {
             Download Report
           </button>
         </div>
+
+        {!isPaid && result?.jobId && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900 text-sm flex items-center justify-between gap-3">
+            <span>Analysis is free. Upgrade to unlock Safe Fixes + Cleaned CSV export.</span>
+            {onUpgrade && (
+              <button
+                onClick={onUpgrade}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800"
+              >
+                Upgrade
+              </button>
+            )}
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm" role="alert">

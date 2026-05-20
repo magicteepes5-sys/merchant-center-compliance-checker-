@@ -71,9 +71,9 @@ export default async function handler(req: any, res: any) {
     const verificationToken = randomBytes(32).toString('hex');
 
     const inserted = await sql`
-      INSERT INTO users (id, email, password_hash, searches_remaining, email_verified, verification_token, verification_token_expires_at, signup_fingerprint)
-      VALUES (${uid}, ${normalizedEmail}, ${hash}, 0, FALSE, ${verificationToken}, NOW() + INTERVAL '24 hours', ${fingerprint})
-      RETURNING id, email, searches_remaining, email_verified
+      INSERT INTO users (id, email, password_hash, searches_remaining, email_verified, verification_token, verification_token_expires_at, signup_fingerprint, is_paid)
+      VALUES (${uid}, ${normalizedEmail}, ${hash}, 0, FALSE, ${verificationToken}, NOW() + INTERVAL '24 hours', ${fingerprint}, FALSE)
+      RETURNING id, email, searches_remaining, email_verified, is_paid
     `;
 
     const user = inserted[0];
@@ -91,7 +91,8 @@ export default async function handler(req: any, res: any) {
         uid: user.id,
         email: user.email,
         searchesRemaining: user.searches_remaining,
-        emailVerified: !!user.email_verified
+        emailVerified: !!user.email_verified,
+        isPaid: !!user.is_paid
       }
     });
   } catch (e: any) {

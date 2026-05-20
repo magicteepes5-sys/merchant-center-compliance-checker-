@@ -20,6 +20,11 @@ async function requireJob(userId: string, jobId: string) {
   return rows[0] || null;
 }
 
+async function getUserPlan(userId: string) {
+  const rows = await sql`SELECT is_paid FROM users WHERE id = ${userId} LIMIT 1`;
+  return !!rows[0]?.is_paid;
+}
+
 export default async function handler(req: any, res: any) {
   const session = getSession(req);
   if (!session) return send(res, 401, { error: 'Unauthorized' });
@@ -28,6 +33,7 @@ export default async function handler(req: any, res: any) {
 
   const action = getAction(req);
   const method = req.method;
+  const isPaid = await getUserPlan(session.userId);
 
   if (method === 'POST' && action === 'upload') {
     const rows = normalizeRows(req.body?.rows);
@@ -97,6 +103,7 @@ export default async function handler(req: any, res: any) {
   }
 
   if (method === 'POST' && action === 'apply-safe-fixes') {
+    if (!isPaid) return send(res, 402, { error: 'Upgrade required: safe fixes are paid only.' });
     const jobId = getJobId(req);
     if (!jobId) return send(res, 400, { error: 'jobId required' });
     const job = await requireJob(session.userId, jobId);
@@ -112,6 +119,7 @@ export default async function handler(req: any, res: any) {
   }
 
   if (method === 'GET' && action === 'download-cleaned') {
+    if (!isPaid) return send(res, 402, { error: 'Upgrade required: cleaned CSV download is paid only.' });
     const jobId = getJobId(req);
     if (!jobId) return send(res, 400, { error: 'jobId required' });
     const job = await requireJob(session.userId, jobId);

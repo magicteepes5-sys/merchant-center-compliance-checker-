@@ -25,7 +25,7 @@ export default async function handler(req: any, res: any) {
       verification_token_expires_at = NULL
     WHERE verification_token = ${token}
       AND verification_token_expires_at > NOW()
-    RETURNING id, email, searches_remaining, email_verified
+    RETURNING id, email, searches_remaining, email_verified, is_paid
   `;
 
   const updated = updatedRows[0];
@@ -42,6 +42,7 @@ export default async function handler(req: any, res: any) {
       email: updated.email,
       searchesRemaining: updated.searches_remaining,
       emailVerified: !!updated.email_verified,
+      isPaid: !!updated.is_paid,
     },
   });
 }

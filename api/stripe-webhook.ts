@@ -49,7 +49,7 @@ export default async function handler(req: any, res: any) {
       if (userId) {
         const existing = await sql`SELECT id FROM billing_events WHERE id = ${event.id} LIMIT 1` as any[];
         if (existing.length === 0) {
-          await sql`UPDATE users SET searches_remaining = searches_remaining + ${creditsPerCycle} WHERE id = ${userId}`;
+          await sql`UPDATE users SET searches_remaining = searches_remaining + ${creditsPerCycle}, is_paid = TRUE WHERE id = ${userId}`;
           await sql`INSERT INTO billing_events (id, event_type, user_id, credits_added) VALUES (${event.id}, ${event.type}, ${userId}, ${creditsPerCycle})`;
         }
       }
