@@ -26,7 +26,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) =>
           <div className="bg-indigo-600 p-2 rounded-lg shadow-lg shadow-indigo-200">
             <ShieldCheckIcon className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-slate-900 tracking-tight">MC Checker</span>
+          <span className="text-lg font-bold text-slate-900 tracking-tight">GMC Checker</span>
         </div>
         <div className="flex items-center gap-4">
           <button 

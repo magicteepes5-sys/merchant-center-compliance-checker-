@@ -16,7 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ user, onLogout, onShowLanding })
           <div className="bg-indigo-600 p-1.5 rounded-lg">
              <ShieldCheckIcon className="w-5 h-5 text-white" />
           </div>
-          <span className="text-lg font-bold text-slate-900 hidden sm:block">MC Checker</span>
+          <span className="text-lg font-bold text-slate-900 hidden sm:block">GMC Checker</span>
         </div>
 
         <div className="flex items-center gap-4 sm:gap-6">

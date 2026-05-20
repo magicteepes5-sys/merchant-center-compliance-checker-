@@ -48,7 +48,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLogin, onSignup, error
           </div>
           
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Merchant Compliance AI
+            GMC Checker
           </h1>
           <p className="text-slate-500 mb-8">
             Identify suspension risks and fix product feed errors before they cost you sales.
