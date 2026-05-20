@@ -57,7 +57,7 @@ export async function ensureSchema() {
 
   await sql`CREATE TABLE IF NOT EXISTS feed_jobs (
     id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'uploaded',
     total_rows INTEGER NOT NULL DEFAULT 0,
     processed_rows INTEGER NOT NULL DEFAULT 0,
