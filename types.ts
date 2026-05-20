@@ -39,3 +39,23 @@ export interface AuditHistoryItem {
   inputExcerpt: string;
   createdAt: string;
 }
+
+export interface FeedCleanerIssue {
+  row: number;
+  field: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | string;
+  message: string;
+  suggestedFix?: string;
+  autoFixable?: boolean;
+}
+
+export interface FeedCleanerProcessResult {
+  jobId: string;
+  summary: {
+    critical: number;
+    high: number;
+    medium: number;
+    autoFixable: number;
+  };
+  issues: FeedCleanerIssue[];
+}

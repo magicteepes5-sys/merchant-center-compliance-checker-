@@ -6,7 +6,7 @@ export const Footer: React.FC = () => {
     <footer className="text-center py-8 mt-12 bg-white border-t border-slate-100">
       <div className="container mx-auto px-4">
           <p className="text-sm text-slate-400">
-            Powered by Gemini AI • Merchant Center Compliance Checker
+            Powered by OpenAI • GMC Checker
           </p>
            <p className="text-xs text-slate-400 mt-2">
             Recommendations are AI-generated. Always verify with official{' '}

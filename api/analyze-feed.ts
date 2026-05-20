@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { ensureSchema, sql } from '../lib/db.js';
+import { processCsvFeed } from '../lib/feed-csv-processor.js';
 import { getSession, send } from './_shared.js';
 type FeedResult = {
   summary: string;
@@ -115,6 +116,17 @@ async function analyzeWithOpenAI(feedContent: string, apiKey: string): Promise<F
   return parsed as FeedResult;
 }
 
+function rowsToPromptText(rows: Array<Record<string, string>>): string {
+  if (!rows.length) return '';
+
+  return rows
+    .map((row) => {
+      const orderedEntries = Object.entries(row).sort(([a], [b]) => a.localeCompare(b));
+      return orderedEntries.map(([k, v]) => `${k}=${v}`).join(' | ');
+    })
+    .join('\n');
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' });
   const session = getSession(req);
@@ -133,13 +145,40 @@ export default async function handler(req: any, res: any) {
   if (!apiKey) return send(res, 500, { error: 'OPENAI_API_KEY missing' });
 
   try {
-    const result = await analyzeWithOpenAI(feedContent, apiKey);
+    const processedFeed = processCsvFeed(feedContent, { defaultCurrency: 'USD' });
+    const cleanedRowsExcerpt = processedFeed.cleanedRows.slice(0, 250);
+    const cleanedPromptText = rowsToPromptText(cleanedRowsExcerpt);
+    const issueSummary = {
+      totalIssues: processedFeed.issues.length,
+      bySeverity: {
+        error: processedFeed.issues.filter((i) => i.severity === 'error').length,
+        warning: processedFeed.issues.filter((i) => i.severity === 'warning').length,
+        info: processedFeed.issues.filter((i) => i.severity === 'info').length,
+      },
+      topIssues: processedFeed.issues.slice(0, 50),
+      ruleRunCounts: processedFeed.ruleRunCounts,
+    };
+
+    const modelInput = cleanedPromptText
+      ? `CLEANED FEED ROWS (first ${cleanedRowsExcerpt.length} rows):\n${cleanedPromptText}\n\nVALIDATION SUMMARY:\n${JSON.stringify(issueSummary)}`
+      : feedContent;
+
+    const result = await analyzeWithOpenAI(modelInput, apiKey);
 
     await sql`UPDATE users SET searches_remaining = searches_remaining - 1 WHERE id = ${session.userId}`;
     await sql`INSERT INTO analyses (id, user_id, analysis_type, input_excerpt, result_json) VALUES (${randomUUID()}, ${session.userId}, 'feed', ${feedContent.slice(0, 300)}, ${JSON.stringify(result)}::jsonb)`;
     const latest = await sql`SELECT searches_remaining FROM users WHERE id = ${session.userId}`;
 
-    return send(res, 200, { result, searchesRemaining: latest[0].searches_remaining });
+    return send(res, 200, {
+      result,
+      feedValidation: {
+        headers: processedFeed.headers,
+        rowsParsed: processedFeed.rowsParsed,
+        issues: processedFeed.issues,
+        ruleRunCounts: processedFeed.ruleRunCounts,
+      },
+      searchesRemaining: latest[0].searches_remaining,
+    });
   } catch (error: any) {
     return send(res, 500, { error: 'Analysis failed', detail: String(error?.message || error) });
   }

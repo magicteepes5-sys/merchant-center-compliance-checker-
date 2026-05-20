@@ -9,6 +9,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { UpgradeModal } from './components/UpgradeModal';
 import { LandingPage } from './components/LandingPage';
 import { AuditHistory } from './components/AuditHistory';
+import { FeedCleanerPanel } from './components/FeedCleanerPanel';
 import { analyzeFeed, analyzeWebsite, createCheckoutSession, getAuditHistory, getMe, login, logoutLocal, signup, verifyEmailToken } from './services/apiClient';
 
 const App: React.FC = () => {
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   const [authError, setAuthError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [auditHistory, setAuditHistory] = useState<AuditHistoryItem[]>([]);
+  const [activeWorkspace, setActiveWorkspace] = useState<'compliance' | 'feedCleaner'>('compliance');
 
   useEffect(() => {
     (async () => {
@@ -202,16 +204,37 @@ const App: React.FC = () => {
                 </button>
               </div>
             )}
-            <InputForm onAnalyze={handleAnalysis} isLoading={isLoading} />
-            {isLoading && <Loader />}
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm animate-fade-in" role="alert">
-                <p className="font-bold">Analysis Failed</p>
-                <p>{error}</p>
-              </div>
+            <div className="bg-white rounded-2xl border border-slate-200 p-2 inline-flex gap-2">
+              <button
+                onClick={() => setActiveWorkspace('compliance')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${activeWorkspace === 'compliance' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                Compliance Checker
+              </button>
+              <button
+                onClick={() => setActiveWorkspace('feedCleaner')}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${activeWorkspace === 'feedCleaner' ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                Feed Cleaner
+              </button>
+            </div>
+
+            {activeWorkspace === 'compliance' ? (
+              <>
+                <InputForm onAnalyze={handleAnalysis} isLoading={isLoading} />
+                {isLoading && <Loader />}
+                {error && (
+                  <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-r-lg shadow-sm animate-fade-in" role="alert">
+                    <p className="font-bold">Analysis Failed</p>
+                    <p>{error}</p>
+                  </div>
+                )}
+                <ResultsDisplay result={analysisResult || undefined} productResult={productAnalysisResult || undefined} />
+                <AuditHistory items={auditHistory} />
+              </>
+            ) : (
+              <FeedCleanerPanel />
             )}
-            <ResultsDisplay result={analysisResult || undefined} productResult={productAnalysisResult || undefined} />
-            <AuditHistory items={auditHistory} />
           </div>
         </main>
 
