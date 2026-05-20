@@ -49,7 +49,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, onLogin }) =>
         <div className="container mx-auto px-4 text-center max-w-5xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wide mb-8 animate-fade-in">
             <SparklesIcon className="w-4 h-4" />
-            <span>Powered by OpenAI intelligence</span>
+            <span>Powered by Artificial Intelligence</span>
           </div>
           
           <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 leading-[1.1] tracking-tight mb-8 animate-fade-in-up">
