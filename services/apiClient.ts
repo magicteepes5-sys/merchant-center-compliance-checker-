@@ -154,27 +154,27 @@ export async function processFeedCleanerCsv(csv: string): Promise<FeedCleanerPro
   const rows = parseCsvToRows(csv);
   if (!rows.length) throw new Error('CSV parsing failed. Please include header + at least 1 product row.');
 
-  const uploaded = await req<{ jobId: string }>('/api/feed/upload', { method: 'POST', body: JSON.stringify({ rows }) });
+  const uploaded = await req<{ jobId: string }>('/api/feed?action=upload', { method: 'POST', body: JSON.stringify({ rows }) });
   const jobId = uploaded.jobId;
 
-  await req(`/api/feed/${encodeURIComponent(jobId)}/process`, { method: 'POST' });
-  const issueRes = await req<{ issues: any[] }>(`/api/feed/${encodeURIComponent(jobId)}/issues`);
+  await req(`/api/feed?action=process&jobId=${encodeURIComponent(jobId)}`, { method: 'POST' });
+  const issueRes = await req<{ issues: any[] }>(`/api/feed?action=issues&jobId=${encodeURIComponent(jobId)}`);
   const issues = mapIssuesToUi(issueRes.issues || []);
 
   return { jobId, issues, summary: summarizeUi(issues) };
 }
 
 export async function applyFeedCleanerSafeFixes(jobId: string): Promise<FeedCleanerProcessResult> {
-  await req(`/api/feed/${encodeURIComponent(jobId)}/apply-safe-fixes`, { method: 'POST' });
-  const issueRes = await req<{ issues: any[] }>(`/api/feed/${encodeURIComponent(jobId)}/issues`);
+  await req(`/api/feed?action=apply-safe-fixes&jobId=${encodeURIComponent(jobId)}`, { method: 'POST' });
+  const issueRes = await req<{ issues: any[] }>(`/api/feed?action=issues&jobId=${encodeURIComponent(jobId)}`);
   const issues = mapIssuesToUi(issueRes.issues || []);
   return { jobId, issues, summary: summarizeUi(issues) };
 }
 
 export async function downloadFeedCleanerCleanedCsv(jobId: string): Promise<Blob> {
-  return reqBlob(`/api/feed/${encodeURIComponent(jobId)}/download-cleaned`);
+  return reqBlob(`/api/feed?action=download-cleaned&jobId=${encodeURIComponent(jobId)}`);
 }
 
 export async function downloadFeedCleanerReport(jobId: string): Promise<Blob> {
-  return reqBlob(`/api/feed/${encodeURIComponent(jobId)}/report`);
+  return reqBlob(`/api/feed?action=report&jobId=${encodeURIComponent(jobId)}`);
 }
